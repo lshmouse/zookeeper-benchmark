@@ -14,7 +14,7 @@ public class SyncBenchmarkClient extends BenchmarkClient {
 	private boolean _syncfin;
 
 	private static final Logger LOG = Logger.getLogger(SyncBenchmarkClient.class);
-
+  
 	public SyncBenchmarkClient(ZooKeeperBenchmark zkBenchmark, String host, String namespace,
 			int attempts, int id) throws IOException {
 		super(zkBenchmark, host, namespace, attempts, id);
@@ -31,7 +31,7 @@ public class SyncBenchmarkClient extends BenchmarkClient {
 		}
 	}
 		
-	protected void submitWrapped(int xx, TestType type) throws Exception {
+	protected void submitWrapped(int n, TestType type) throws Exception {
 		_syncfin = false;
 		_totalOps = _zkBenchmark.getCurrentTotalOps();
 		byte data[];
