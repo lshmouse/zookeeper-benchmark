@@ -5,8 +5,6 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.BrokenBarrierException;
@@ -51,19 +49,7 @@ public class ZooKeeperBenchmark {
 	private static final Logger LOG = Logger.getLogger(ZooKeeperBenchmark.class);
 	
 	public ZooKeeperBenchmark(Configuration conf) throws IOException {
-		LinkedList<String> serverList = new LinkedList<String>();
-		Iterator<String> serverNames = conf.getKeys("server");
-
-		while (serverNames.hasNext()) {
-			String serverName = serverNames.next();
-			String address = conf.getString(serverName);
-			serverList.add(address);
-		}
-		
-		if (serverList.size() == 0) {
-			throw new IllegalArgumentException("ZooKeeper server addresses required");
-		}
-		
+		String[] quorums = conf.getString("servers").split(",");
 		_interval = conf.getInt("interval");
 		_totalOps = conf.getInt("totalOperations");
 		_lowerbound = conf.getInt("lowerbound");
@@ -71,8 +57,9 @@ public class ZooKeeperBenchmark {
 		_totalTimeSeconds = Math.round((double) totaltime / 1000.0);
 		boolean sync = conf.getBoolean("sync");
 		
-		_running = new HashMap<Integer,Thread>();		
-		_clients = new BenchmarkClient[serverList.size()];
+		_running = new HashMap<Integer,Thread>();
+		int clientNum = conf.getInt("clients");
+		_clients = new BenchmarkClient[clientNum];
 		_barrier = new CyclicBarrier(_clients.length+1);
 		_deadline = totaltime / _interval;
 		
@@ -85,13 +72,13 @@ public class ZooKeeperBenchmark {
 			_data += "!!!!!";
 		}
 
-		int avgOps = _totalOps / serverList.size();
+		int avgOps = _totalOps / clientNum;
 
-		for (int i = 0; i < serverList.size(); i++) {
+		for (int i = 0; i < clientNum; i++) {
 			if (sync) {
-				_clients[i] = new SyncBenchmarkClient(this, serverList.get(i), "/zkTest", avgOps, i);
+				_clients[i] = new SyncBenchmarkClient(this, quorums[i % quorums.length], "/zkTest", avgOps, i);
 			} else {
-				_clients[i] = new AsyncBenchmarkClient(this, serverList.get(i), "/zkTest", avgOps, i);
+				_clients[i] = new AsyncBenchmarkClient(this, quorums[i % quorums.length], "/zkTest", avgOps, i);
 			}
 		}
 		

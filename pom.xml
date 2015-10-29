@@ -15,6 +15,9 @@
     <url>http://systems.cs.brown.edu</url>
   </organization>
 
+  <properties>
+    <ZooKeeperVersion>3.4.5-mdh1.2-SNAPSHOT</ZooKeeperVersion>
+  </properties>
   <dependencies>
 
     <dependency>
